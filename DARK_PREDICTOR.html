@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRX NUMBER PREDICTOR</title>
+    <style>
+        :root {
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --accent: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --correct-color: #4CAF50;
+            --incorrect-color: #F44336;
+            --pattern-highlight: #333333;
+            --input-bg: #333;
+            --input-border: #444;
+            --highlight: #424242;
+        }
+        
+        /* Loading screen styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-logo {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--text-primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            color: var(--text-primary);
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+        }
+        
+        .container {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            border: 1px solid #333;
+        }
+        
+        .kenn-logo {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+        
+        .credit {
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--text-primary);
+            margin-top: 0;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            font-size: 28px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .warning {
+            color: var(--incorrect-color);
+            font-weight: bold;
+            background-color: rgba(244, 67, 54, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--incorrect-color);
+            font-size: 14px;
+        }
+        
+        .input-section {
+            background-color: var(--darker-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a2a;
+        }
+        
+        .quick-input-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .quick-input-btn {
+            padding: 12px 0;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-align: center;
+            min-width: 0;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+        }
+        
+        .quick-input-btn:hover {
+            background-color: var(--highlight);
+            transform: translateY(-2px);
+        }
+        
+        .history-display {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            min-height: 50px;
+            background-color: var(--accent);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        
+        .history-item {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: var(--text-primary);
+            background-color: var(--input-bg);
+        }
+        
+        button {
+            padding: 12px 18px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .primary-btn {
+            background: var(--highlight);
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+        
+        .primary-btn:hover {
+            background-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .action-btn {
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+        }
+        
+        .action-btn:hover {
+            background-color: var(--highlight);
+        }
+        
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--darker-bg);
+            border-radius: 12px;
+            border-left: 4px solid var(--highlight);
+            border: 1px solid #333;
+        }
+        
+        .feedback-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .correct {
+            background-color: var(--correct-color);
+            color: white;
+            border: none;
+        }
+        
+        .incorrect {
+            background-color: var(--incorrect-color);
+            color: white;
+            border: none;
+        }
+        
+        .stats {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: var(--darker-bg);
+            border-radius: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            border: 1px solid #333;
+        }
+        
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+            color: var(--text-primary);
+        }
+        
+        .history {
+            margin-top: 25px;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: var(--darker-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #333;
+        }
+        
+        .pattern-match {
+            background-color: var(--pattern-highlight);
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 8px;
+            font-family: monospace;
+            border-left: 4px solid var(--highlight);
+        }
+        
+        .timestamp {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        .method {
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        /* Round display */
+        .round-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .round-display {
+            background-color: var(--darker-bg);
+            color: var(--text-primary);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            border: 1px solid var(--input-border);
+        }
+        
+        .round-number {
+            font-size: 20px;
+            margin-left: 5px;
+        }
+        
+        .round-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .round-input input {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 80px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .round-input button {
+            padding: 8px 12px;
+            font-size: 14px;
+            background-color: var(--highlight);
+            color: var(--text-primary);
+        }
+        
+        /* Text input section */
+        .manual-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+        }
+        
+        .manual-input input {
+            flex-grow: 1;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .manual-input button {
+            padding: 12px 18px;
+        }
+        
+        /* Action buttons container */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--darker-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--highlight);
+            border-radius: 4px;
+        }
+        
+        /* Animation for prediction */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        /* Notification styling */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        .notification.correct {
+            background-color: var(--correct-color);
+            border-left: 5px solid #2e7d32;
+        }
+        
+        .notification.incorrect {
+            background-color: var(--incorrect-color);
+            border-left: 5px solid #c62828;
+        }
+        
+        .notification-icon {
+            font-size: 24px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-input-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .round-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .notification {
+                width: 90%;
+                text-align: center;
+            }
+
+            .action-btn[onclick="resetAllData()"] {
+                background-color: rgba(244, 67, 54, 0.2);
+                border: 1px solid var(--incorrect-color);
+                color: var(--incorrect-color);
+            }
+
+            .action-btn[onclick="resetAllData()"]:hover {
+                background-color: rgba(244, 67, 54, 0.3);
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .quick-input-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">TRX PREDICTOR</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Number Predictor...</div>
+    </div>
+
+    <div id="notification" class="notification">
+        <span class="notification-icon"></span>
+        <span class="notification-message"></span>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="winSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="loseSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-lose-2027.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container">
+        <div class="kenn-logo">PREMIUN</div>
+        <h1>TRX NUMBER PREDICTOR</h1>
+        <div class="credit">by DEVELOPER MICK</div>
+        <p class="warning">⚠️ Warning: 
+• Set a daily profit target before playing.
+• Stop immediately when you reach your target.
+• Consider the possibility of losses as well.</p>
+        <div class="round-container">
+            <div class="round-display">
+                Current Round: <span class="round-number" id="currentRound">1</span>
+            </div>
+            <div class="round-input">
+                <input type="number" id="roundInput" min="1" value="1">
+                <button onclick="updateRoundNumber()">Set Round</button>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <h3>Enter Last Results</h3>
+            <div class="quick-input-buttons">
+                <button class="quick-input-btn" onclick="addResult(0)">0 (R/P)</button>
+                <button class="quick-input-btn" onclick="addResult(1)">1 (G)</button>
+                <button class="quick-input-btn" onclick="addResult(2)">2 (R)</button>
+                <button class="quick-input-btn" onclick="addResult(3)">3 (G)</button>
+                <button class="quick-input-btn" onclick="addResult(4)">4 (R)</button>
+                <button class="quick-input-btn" onclick="addResult(5)">5 (G/P)</button>
+                <button class="quick-input-btn" onclick="addResult(6)">6 (R)</button>
+                <button class="quick-input-btn" onclick="addResult(7)">7 (G)</button>
+                <button class="quick-input-btn" onclick="addResult(8)">8 (R)</button>
+                <button class="quick-input-btn" onclick="addResult(9)">9 (G)</button>
+            </div>
+            
+            <div class="manual-input">
+                <input type="text" id="manualInput" placeholder="Enter numbers separated by commas (e.g., 1,2,3,4)">
+                <button class="action-btn" onclick="addMultipleResults()">Add</button>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="action-btn" onclick="clearHistory()">Clear All</button>
+                <button class="action-btn" onclick="removeLast()">Undo Last</button>
+            </div>
+            
+            <div class="history-display" id="historyDisplay">
+                <!-- History items will appear here -->
+            </div>
+        </div>
+        
+        <button class="primary-btn" onclick="predict()" style="width: 100%; padding: 15px; font-size: 18px;">
+            GENERATE PREDICTION
+        </button>
+        
+        <div id="results" style="display: none;">
+            <h3>PREDICTION RESULTS</h3>
+            <div id="resultContent"></div>
+            <div class="feedback-buttons">
+                <button class="correct" onclick="recordFeedback(true)">✅ Correct</button>
+                <button class="incorrect" onclick="recordFeedback(false)">❌ Incorrect</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div>Total Predictions</div>
+                <div class="stat-value" id="totalPredictions">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Correct</div>
+                <div class="stat-value" id="correctPredictions">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Win Rate</div>
+                <div class="stat-value" id="winRate">0%</div>
+            </div>
+        </div>
+        
+        <div class="history">
+            <h3>Prediction History</h3>
+            <div id="historyList"></div>
+        </div>
+        <button class="action-btn" onclick="resetAllData()">Reset All Data</button>
+    </div>
+
+    <script>
+        // Number color mapping
+        const numberColors = {
+            0: ['red', 'purple'],
+            1: ['green'],
+            2: ['red'],
+            3: ['green'],
+            4: ['red'],
+            5: ['green', 'purple'],
+            6: ['red'],
+            7: ['green'],
+            8: ['red'],
+            9: ['green']
+        };
+        
+        // Number properties
+        const numberProperties = {
+            0: { color: 'red/purple', type: 'small' },
+            1: { color: 'green', type: 'small' },
+            2: { color: 'red', type: 'small' },
+            3: { color: 'green', type: 'small' },
+            4: { color: 'red', type: 'small' },
+            5: { color: 'green/purple', type: 'big' },
+            6: { color: 'red', type: 'big' },
+            7: { color: 'green', type: 'big' },
+            8: { color: 'red', type: 'big' },
+            9: { color: 'green', type: 'big' }
+        };
+        
+        // Initialize audio elements
+        const winSound = document.getElementById('winSound');
+        const loseSound = document.getElementById('loseSound');
+        
+        // Set volume for sounds
+        winSound.volume = 0.5;
+        loseSound.volume = 0.5;
+        
+        // Function to enable sounds after user interaction
+        function enableSounds() {
+            // Play and immediately pause to satisfy browser autoplay policies
+            winSound.play().then(() => {
+                winSound.pause();
+                winSound.currentTime = 0;
+            }).catch(e => console.log("Sound enable failed:", e));
+        }
+        
+        // Enable sounds when user first interacts with the page
+        document.addEventListener('click', enableSounds, { once: true });
+        
+        // Show loading screen initially
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(function() {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 500);
+            }, 3000);
+        });
+
+        // Enhanced pattern database
+        const patterns = [
+            { id: 1, pattern: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], description: "Sequential numbers" },
+            { id: 2, pattern: [9, 8, 7, 6, 5, 4, 3, 2, 1, 0], description: "Reverse sequential" },
+            { id: 3, pattern: [0, 2, 4, 6, 8], description: "Even numbers" },
+            { id: 4, pattern: [1, 3, 5, 7, 9], description: "Odd numbers" },
+            { id: 5, pattern: [0, 5, 0, 5, 0, 5], description: "Alternating 0 and 5" },
+            { id: 6, pattern: [1, 3, 5, 7, 9, 1, 3, 5], description: "Odd number sequence" },
+            { id: 7, pattern: [0, 2, 4, 6, 8, 0, 2, 4], description: "Even number sequence" },
+            { id: 8, pattern: [5, 5, 5, 5, 5], description: "Repeating 5" },
+            { id: 9, pattern: [0, 0, 0, 0, 0], description: "Repeating 0" },
+            { id: 10, pattern: [1, 2, 3, 1, 2, 3], description: "1-2-3 repetition" },
+            { id: 11, pattern: [7, 8, 9, 7, 8, 9], description: "7-8-9 repetition" },
+            { id: 12, pattern: [0, 1, 0, 1, 0, 1], description: "0-1 alternation" },
+            { id: 13, pattern: [8, 9, 8, 9, 8, 9], description: "8-9 alternation" },
+            { id: 14, pattern: [0, 5, 9, 0, 5, 9], description: "0-5-9 cycle" }
+        ];
+
+        // Initialize stats and history
+        let stats = {
+            total: 0,
+            correct: 0,
+            history: [],
+            streak: {
+                current: 0,
+                max: 0
+            },
+            currentRound: 1
+        };
+        
+        let resultHistory = [];
+        
+        // Load stats from localStorage if available
+        if (localStorage.getItem('trxStats')) {
+            const savedData = JSON.parse(localStorage.getItem('trxStats'));
+            stats = savedData.stats || stats;
+            resultHistory = savedData.resultHistory || resultHistory;
+            updateStatsDisplay();
+            updateHistoryDisplay();
+            renderHistory();
+            updateRoundDisplay();
+        }
+        
+        function updateRoundDisplay() {
+            document.getElementById('currentRound').textContent = stats.currentRound;
+            document.getElementById('roundInput').value = stats.currentRound;
+        }
+        
+        function updateRoundNumber() {
+            const newRound = parseInt(document.getElementById('roundInput').value);
+            if (!isNaN(newRound) && newRound > 0) {
+                stats.currentRound = newRound;
+                updateRoundDisplay();
+                saveToLocalStorage();
+            } else {
+                showNotification(false, "Please enter a valid round number (1 or higher)");
+            }
+        }
+        
+        function addResult(number) {
+            resultHistory.push(parseInt(number));
+            renderHistory();
+            saveToLocalStorage();
+        }
+        
+        function addMultipleResults() {
+            const input = document.getElementById('manualInput').value;
+            if (!input.trim()) {
+                showNotification(false, "Please enter numbers to add");
+                return;
+            }
+            
+            // Split by commas and clean up
+            const numbers = input.split(',')
+                .map(num => num.trim())
+                .filter(num => num !== '');
+            
+            // Validate each number
+            for (const numStr of numbers) {
+                const num = parseInt(numStr);
+                if (isNaN(num) || num < 0 || num > 9) {
+                    showNotification(false, `Invalid number: ${numStr}. Please enter numbers 0-9.`);
+                    return;
+                }
+            }
+            
+            // Add all valid numbers
+            numbers.forEach(numStr => {
+                resultHistory.push(parseInt(numStr));
+            });
+            
+            // Clear input field
+            document.getElementById('manualInput').value = '';
+            
+            renderHistory();
+            saveToLocalStorage();
+            showNotification(true, `Added ${numbers.length} numbers to history`);
+        }
+        
+        function removeLast() {
+            if (resultHistory.length > 0) {
+                resultHistory.pop();
+                renderHistory();
+                saveToLocalStorage();
+                showNotification(true, "Removed last number");
+            } else {
+                showNotification(false, "No numbers to remove");
+            }
+        }
+        
+        function clearHistory() {
+            if (resultHistory.length === 0) {
+                showNotification(false, "History is already empty");
+                return;
+            }
+            
+            if (confirm("Are you sure you want to clear all entered numbers?")) {
+                resultHistory = [];
+                renderHistory();
+                saveToLocalStorage();
+                showNotification(true, "Cleared all numbers");
+            }
+        }
+        
+        function renderHistory() {
+            const historyDisplay = document.getElementById('historyDisplay');
+            historyDisplay.innerHTML = '';
+            
+            if (resultHistory.length === 0) {
+                historyDisplay.innerHTML = '<div style="color: var(--text-secondary);">No results entered yet</div>';
+                return;
+            }
+            
+            resultHistory.forEach((number, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'history-item';
+                itemDiv.textContent = number;
+                historyDisplay.appendChild(itemDiv);
+            });
+        }
+        
+        function predict() {
+            if (resultHistory.length < 3) {
+                showNotification(false, "Please enter at least 3 results to generate a prediction");
+                return;
+            }
+            
+            // Show loading screen during prediction
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.style.display = 'flex';
+            loadingScreen.style.opacity = '1';
+            loadingScreen.querySelector('.loading-text').textContent = 'Analyzing patterns...';
+            
+            // Simulate processing time (1.5 seconds)
+            setTimeout(() => {
+                // Find matching patterns
+                const matchedPatterns = [];
+                
+                for (const patternObj of patterns) {
+                    const pattern = patternObj.pattern;
+                    // Check if the end of the pattern matches our history
+                    if (resultHistory.length >= pattern.length) {
+                        const recentHistory = resultHistory.slice(-pattern.length);
+                        if (JSON.stringify(recentHistory) === JSON.stringify(pattern)) {
+                            matchedPatterns.push(patternObj);
+                        }
+                    } else {
+                        // Check if our history matches the beginning of the pattern
+                        const patternStart = pattern.slice(0, resultHistory.length);
+                        if (JSON.stringify(resultHistory) === JSON.stringify(patternStart)) {
+                            matchedPatterns.push(patternObj);
+                        }
+                    }
+                }
+                
+                // Generate prediction
+                let prediction;
+                let predictionMethod = "No pattern matched - Random prediction";
+                let patternUsed = null;
+                
+                if (matchedPatterns.length > 0) {
+                    // Sort by pattern length (longest first)
+                    matchedPatterns.sort((a, b) => b.pattern.length - a.pattern.length);
+                    
+                    // Use the longest matched pattern
+                    const selectedPattern = matchedPatterns[0];
+                    const patternIndex = resultHistory.length % selectedPattern.pattern.length;
+                    prediction = selectedPattern.pattern[patternIndex];
+                    predictionMethod = `Matched Pattern #${selectedPattern.id}: ${selectedPattern.description}`;
+                    patternUsed = selectedPattern;
+                } else {
+                    // If no pattern matched, use advanced fallback strategies
+                    
+                    // 1. Check for color patterns
+                    const lastColors = resultHistory.slice(-3).map(n => numberColors[n][0]);
+                    const redCount = lastColors.filter(c => c === 'red').length;
+                    const greenCount = lastColors.filter(c => c === 'green').length;
+                    
+                    if (redCount >= 2) {
+                        // If 2+ reds, predict green
+                        prediction = [1, 3, 5, 7, 9][Math.floor(Math.random() * 5)];
+                        predictionMethod = "Color balance (2+ reds, predicting green)";
+                    } else if (greenCount >= 2) {
+                        // If 2+ greens, predict red
+                        prediction = [0, 2, 4, 6, 8][Math.floor(Math.random() * 5)];
+                        predictionMethod = "Color balance (2+ greens, predicting red)";
+                    } else {
+                        // 2. Check for big/small patterns
+                        const lastTypes = resultHistory.slice(-3).map(n => numberProperties[n].type);
+                        const bigCount = lastTypes.filter(t => t === 'big').length;
+                        const smallCount = lastTypes.filter(t => t === 'small').length;
+                        
+                        if (bigCount >= 2) {
+                            // If 2+ big, predict small
+                            prediction = [0, 1, 2, 3, 4][Math.floor(Math.random() * 5)];
+                            predictionMethod = "Type balance (2+ big, predicting small)";
+                        } else if (smallCount >= 2) {
+                            // If 2+ small, predict big
+                            prediction = [5, 6, 7, 8, 9][Math.floor(Math.random() * 5)];
+                            predictionMethod = "Type balance (2+ small, predicting big)";
+                        } else {
+                            // If no clear pattern, predict random with weighted probabilities
+                            const lastNumber = resultHistory[resultHistory.length - 1];
+                            const weightedOptions = [];
+                            
+                            // Higher probability for numbers not recently appeared
+                            const recentNumbers = resultHistory.slice(-5);
+                            for (let i = 0; i <= 9; i++) {
+                                if (!recentNumbers.includes(i)) {
+                                    weightedOptions.push(...Array(3).fill(i)); // 3x weight for not recent
+                                } else {
+                                    weightedOptions.push(i); // 1x weight for recent
+                                }
+                            }
+                            
+                            prediction = weightedOptions[Math.floor(Math.random() * weightedOptions.length)];
+                            predictionMethod = "Weighted random prediction";
+                        }
+                    }
+                }
+                
+                // Store current prediction for feedback
+                stats.currentPrediction = {
+                    history: [...resultHistory],
+                    prediction: prediction,
+                    actual: null,
+                    timestamp: new Date().toISOString(),
+                    method: predictionMethod,
+                    patternUsed: patternUsed,
+                    round: stats.currentRound
+                };
+                
+                // Hide loading screen
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    
+                    // Display results
+                    displayResults(prediction, matchedPatterns, predictionMethod);
+                    
+                    // Show results section
+                    document.getElementById('results').style.display = 'block';
+                    
+                    // Scroll to results
+                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            }, 1500); // 1.5 seconds processing time
+        }
+        
+        function displayResults(prediction, matchedPatterns, predictionMethod) {
+            const colorClass = numberColors[prediction][0] === 'red' ? 'red' : 
+                             numberColors[prediction][0] === 'green' ? 'green' : 'purple';
+            
+            let resultsHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 24px; text-align: center; margin: 15px 0;">
+                        Next Prediction: <span style="color: ${colorClass === 'red' ? '#F44336' : colorClass === 'green' ? '#4CAF50' : '#9C27B0'}; font-weight: bold;">${prediction}</span>
+                        <div style="font-size: 14px; margin-top: 5px;">
+                            (${numberProperties[prediction].color}, ${numberProperties[prediction].type})
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 18px;">${predictionMethod}</div>
+                        <div style="margin-top: 5px; font-size: 14px; color: var(--text-secondary);">Round: ${stats.currentRound}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4>Recent History:</h4>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        ${resultHistory.map((number, index) => {
+                            return `<div style="padding: 8px 12px; background: var(--input-bg); 
+                                  color: var(--text-primary); border-radius: 5px; font-weight: bold;">
+                                ${number}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            
+            if (matchedPatterns.length > 0) {
+                resultsHTML += `<h4>Matched Patterns:</h4>`;
+                matchedPatterns.forEach(patternObj => {
+                    resultsHTML += `
+                        <div class="pattern-match">
+                            <div><strong>Pattern #${patternObj.id}:</strong> ${patternObj.description}</div>
+                            <div>${formatPatternWithPrediction(patternObj.pattern, resultHistory.length)}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('resultContent').innerHTML = resultsHTML;
+        }
+        
+        function formatPatternWithPrediction(pattern, historyLength) {
+            let patternIndex = historyLength % pattern.length;
+            return pattern.map((number, index) => {
+                if (index === patternIndex) {
+                    return `<span style="border: 2px solid var(--highlight); 
+                            padding: 2px 5px; border-radius: 3px;">${number} (Predicted)</span>`;
+                }
+                return number;
+            }).join(' → ');
+        }
+        
+        function recordFeedback(isCorrect) {
+            stats.total++;
+            
+            // Update streak
+            if (isCorrect) {
+                stats.correct++;
+                stats.streak.current++;
+                if (stats.streak.current > stats.streak.max) {
+                    stats.streak.max = stats.streak.current;
+                }
+                playWinSound();
+            } else {
+                stats.streak.current = 0;
+                playLoseSound();
+            }
+            
+            // Update current prediction with result
+            if (stats.currentPrediction) {
+                stats.currentPrediction.actual = isCorrect ? "correct" : "incorrect";
+                stats.currentPrediction.feedbackTime = new Date().toISOString();
+                stats.history.unshift(stats.currentPrediction);
+                
+                // Keep only last 50 history items
+                if (stats.history.length > 50) {
+                    stats.history.pop();
+                }
+            }
+            
+            // Increment round number
+            stats.currentRound++;
+            
+            // Save to localStorage
+            saveToLocalStorage();
+            
+            // Update displays
+            updateStatsDisplay();
+            updateHistoryDisplay();
+            updateRoundDisplay();
+            
+            // Hide feedback buttons and show result
+            document.getElementById('results').style.display = 'none';
+            
+            // Show UI notification
+            showNotification(isCorrect, isCorrect 
+                ? `CORRECT! Round ${stats.currentRound - 1} completed.` 
+                : `INCORRECT! Round ${stats.currentRound - 1} completed.`);
+        }
+        
+        function playWinSound() {
+            try {
+                winSound.currentTime = 0;
+                winSound.play().catch(e => console.log("Win sound play failed:", e));
+            } catch (e) {
+                console.log("Win sound error:", e);
+            }
+        }
+        
+        function playLoseSound() {
+            try {
+                loseSound.currentTime = 0;
+                loseSound.play().catch(e => console.log("Lose sound play failed:", e));
+            } catch (e) {
+                console.log("Lose sound error:", e);
+            }
+        }
+        
+        function showNotification(isCorrect, message) {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('.notification-icon');
+            const messageElement = notification.querySelector('.notification-message');
+            
+            notification.className = 'notification ' + (isCorrect ? 'correct' : 'incorrect');
+            icon.textContent = isCorrect ? '🎉' : '😞';
+            messageElement.textContent = message;
+            
+            notification.classList.add('show');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        function updateStatsDisplay() {
+            document.getElementById('totalPredictions').textContent = stats.total;
+            document.getElementById('correctPredictions').textContent = stats.correct;
+            
+            const winRate = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+            document.getElementById('winRate').textContent = winRate + '%';
+        }
+        
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (stats.history.length === 0) {
+                historyList.innerHTML = '<p>No prediction history yet</p>';
+                return;
+            }
+            
+            stats.history.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.style.marginBottom = '15px';
+                historyItem.style.paddingBottom = '15px';
+                historyItem.style.borderBottom = '1px solid #333';
+                
+                const colors = numberColors[item.prediction];
+                let colorText = colors.join('/');
+                if (colors.includes('red') && colors.includes('purple')) colorText = 'red/purple';
+                if (colors.includes('green') && colors.includes('purple')) colorText = 'green/purple';
+                
+                historyItem.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-weight: bold; font-size: 18px;">${item.prediction}</span>
+                            <span style="margin-left: 10px; font-size: 12px; color: ${item.actual === 'correct' ? 'var(--correct-color)' : 'var(--incorrect-color)'}">
+                                ${item.actual === 'correct' ? '✓ Correct' : '✗ Incorrect'}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="timestamp">${new Date(item.timestamp).toLocaleTimeString()}</span>
+                            <span style="margin-left: 10px; background: var(--darker-bg); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                                Round ${item.round}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="margin: 8px 0; display: flex; gap: 5px; flex-wrap: wrap;">
+                        ${item.history.map(number => {
+                            return `<span style="padding: 3px 8px; background: var(--input-bg); 
+                                  color: var(--text-primary); border-radius: 3px; font-size: 12px;">${number}</span>`;
+                        }).join('')}
+                    </div>
+                    <div class="method">${item.method}</div>
+                    ${item.patternUsed ? `<div style="font-size: 12px; margin-top: 5px;">Pattern: #${item.patternUsed.id} - ${item.patternUsed.description}</div>` : ''}
+                    <div style="font-size: 12px; margin-top: 5px;">
+                        Color: ${colorText}, Type: ${numberProperties[item.prediction].type}
+                    </div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        function saveToLocalStorage() {
+            localStorage.setItem('trxStats', JSON.stringify({
+                stats: stats,
+                resultHistory: resultHistory
+            }));
+        }
+        
+        function resetAllData() {
+            if (confirm("Are you sure you want to reset ALL data? This will delete your prediction history, stats, and all saved results.")) {
+                // Reset stats
+                stats = {
+                    total: 0,
+                    correct: 0,
+                    history: [],
+                    streak: {
+                        current: 0,
+                        max: 0
+                    },
+                    currentRound: 1
+                };
+                
+                // Reset result history
+                resultHistory = [];
+                
+                // Clear localStorage
+                localStorage.removeItem('trxStats');
+                
+                // Update displays
+                updateStatsDisplay();
+                updateHistoryDisplay();
+                renderHistory();
+                updateRoundDisplay();
+                
+                // Hide results section if visible
+                document.getElementById('results').style.display = 'none';
+                
+                showNotification(true, "All data has been reset successfully");
+            }
+        }
+    </script>
+</body>
+</html>
